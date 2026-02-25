@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="우리 가족 전용 일정 공유 달력 앱입니다." />
+    <!-- PWA 아이콘 자리표시, 나중에 실제 에셋으로 변경 -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- 폰트 추가 (프리미엄 UI를 위한 웹폰트 - Pretendard) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <title>우리가족 캘린더</title>
+    <!-- CSS 링크 -->
+    <link rel="stylesheet" href="/src/css/index.css" />
+    <link rel="stylesheet" href="/src/css/calendar.css" />
+    <link rel="stylesheet" href="/src/css/modal.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 헤더 -->
+      <header class="app-header">
+        <h1>우리가족 캘린더</h1>
+        <button id="settingsBtn" class="icon-btn" aria-label="설정">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </header>
+
+      <!-- 달력 메인 컨테이너 -->
+      <main class="calendar-container">
+        <!-- 달력 헤더 (월 이동) -->
+        <div class="calendar-header">
+          <button id="prevMonth" class="nav-btn">&lsaquo;</button>
+          <h2 id="currentMonthYear">2026. 02</h2>
+          <button id="nextMonth" class="nav-btn">&rsaquo;</button>
+        </div>
+        
+        <!-- 요일 -->
+        <div class="calendar-weekdays">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+
+        <!-- 날짜 그리드 -->
+        <div id="calendarGrid" class="calendar-grid">
+          <!-- JS로 날짜 요소 동적 생성 -->
+        </div>
+      </main>
+
+      <!-- 일별 일정 리스트 (하단) -->
+      <section class="daily-events-section">
+        <div class="daily-events-header">
+          <h3 id="selectedDateDisplay">오늘의 일정</h3>
+        </div>
+        <ul id="eventsList" class="events-list">
+          <!-- JS로 선택된 날짜의 일정 동적 생성 -->
+          <li class="empty-state">선택한 날짜의 일정이 없습니다.</li>
+        </ul>
+      </section>
+
+      <!-- 플로팅 액션 버튼 (일정 추가) -->
+      <button id="fabAddEvent" class="fab-btn" aria-label="일정 추가">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
+
+      <!-- 모달: 일정 추가/수정 (초기엔 숨김) -->
+      <div id="eventModal" class="modal-backdrop hidden">
+        <div class="modal-content bottom-sheet">
+          <div class="modal-handle"></div>
+          <h2 id="modalTitle">일정 추가</h2>
+          
+          <form id="eventForm">
+            <div class="form-group">
+              <input type="text" id="eventTitle" placeholder="일정 제목" required autocomplete="off" />
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="eventDate">날짜</label>
+                <input type="date" id="eventDate" required />
+              </div>
+              <div class="form-group flex-1">
+                <label for="eventTime">시간</label>
+                <input type="time" id="eventTime" required />
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>담당자</label>
+              <div class="radio-group" id="assigneeGroup">
+                <!-- 라디오 버튼들 -->
+                <label class="radio-card husband">
+                  <input type="radio" name="assignee" value="husband" checked>
+                  <span>남편 🔵</span>
+                </label>
+                <label class="radio-card wife">
+                  <input type="radio" name="assignee" value="wife">
+                  <span>아내 🔴</span>
+                </label>
+                <label class="radio-card both">
+                  <input type="radio" name="assignee" value="both">
+                  <span>가족 🟠</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="eventMemo">메모</label>
+              <textarea id="eventMemo" rows="2" placeholder="자세한 내용을 입력하세요."></textarea>
+            </div>
+
+            <div class="form-group alert-options">
+               <label>알림 설정 (스마트폰 앱 알림)</label>
+               <div class="checkbox-group">
+                  <label><input type="checkbox" name="alerts" value="0"> 정각</label>
+                  <label><input type="checkbox" name="alerts" value="10"> 10분 전</label>
+                  <label><input type="checkbox" name="alerts" value="60"> 1시간 전</label>
+               </div>
+            </div>
+
+            <div class="modal-actions">
+               <button type="button" id="btnCancelEvent" class="btn btn-secondary">취소</button>
+               <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/js/main.js"></script>
+  </body>
+</html>

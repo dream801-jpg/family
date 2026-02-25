@@ -1,0 +1,171 @@
+:root {
+  /* 프리미엄 컬러 팔레트 */
+  --color-primary: #4A90E2;    /* 부드러운 파랑 */
+  --color-husband: #4A90E2;    /* 남편 색상 */
+  --color-wife: #FF5A5F;       /* 아내 색상 */
+  --color-both: #F5A623;       /* 가족(공통) 색상 */
+  
+  --color-bg: #F8F9FA;         /* 앱 배경색 */
+  --color-card: #FFFFFF;       /* 카드, 모달 배경색 */
+  
+  --text-main: #2C3E50;        /* 주 텍스트 (어두운 남색 계열로 고급스러움 추가) */
+  --text-muted: #7F8C8D;       /* 보조 텍스트 */
+  
+  --border-light: #E0E6ED;     /* 연한 테두리 */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+  --shadow-float: 0 4px 12px rgba(74, 144, 226, 0.3);
+
+  /* 타이포그래피 */
+  --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+  /* 전환/애니메이션 시간 */
+  --transition-speed: 0.25s;
+}
+
+/* 다크 모드 (OS 설정 따라감 + 부드러운 톤 유지) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #121212;
+    --color-card: #1E1E1E;
+    --text-main: #E0E0E0;
+    --text-muted: #A0A0A0;
+    --border-light: #2C2C2C;
+    --color-husband: #6BA5EB;
+    --color-wife: #FF7B7F;
+    --color-both: #F7B74A;
+  }
+}
+
+/* 글로벌 리셋 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 깜빡임 제거 */
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--text-main);
+  line-height: 1.5;
+  /* 모바일 PWA 최적화 */
+  overscroll-behavior-y: none; /* 당겨서 새로고침 방지 (의도치 않은 스크롤 방지) */
+  user-select: none; /* 텍스트 선택 방지 */
+}
+
+/* 폼 요소에서는 텍스트 선택 허용 */
+input, textarea {
+  user-select: auto;
+}
+
+#app {
+  max-width: 600px; /* 태블릿/데스크톱에서도 모바일 화면비율 유지되도록 중앙 정렬 */
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--color-bg);
+  box-shadow: 0 0 20px rgba(0,0,0,0.05); /* 데스크탑에서 영역 구분 */
+}
+
+/* ==================
+   헤더 (Header)
+   ================== */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background-color: var(--color-card);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.app-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-speed);
+}
+.icon-btn:active {
+  background-color: var(--border-light);
+}
+
+/* ==================
+   하단 일정 영역
+   ================== */
+.daily-events-section {
+  flex: 1;
+  background-color: var(--color-card);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
+  margin-top: auto;
+  min-height: 35vh;
+}
+
+.daily-events-header {
+  margin-bottom: 1rem;
+}
+
+.daily-events-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.events-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
+
+/* 플로팅 액션 버튼 (FAB) */
+.fab-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: max(2rem, calc(50% - 300px + 2rem)); /* max-width 600px 대응 */
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-float);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fab-btn:active {
+  transform: scale(0.9);
+}
