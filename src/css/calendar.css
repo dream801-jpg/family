@@ -1,0 +1,241 @@
+/* ==================
+   달력 (Calendar)
+   ================== */
+.calendar-container {
+    padding: 1rem 1rem 0 1rem;
+    background-color: var(--color-bg);
+    /* 불필요하게 영역 차지하지 않도록 높이 자동 설정 */
+}
+
+/* 달력 헤더 (연/월 조작) */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.calendar-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn:active {
+    color: var(--text-main);
+}
+
+/* 요일 표시란 */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+/* 첫 번째는 일요일(빨강), 마지막은 토요일(파랑) */
+.calendar-weekdays span:first-child {
+    color: var(--color-wife);
+}
+
+.calendar-weekdays span:last-child {
+    color: var(--color-primary);
+}
+
+/* 일자 그리드 */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    /* 살짝의 여백 */
+    min-height: 280px;
+    /* 고정 최소 높이 보장 */
+}
+
+/* 개별 일자 (Cell) */
+.calendar-day {
+    aspect-ratio: 1;
+    /* 가로세로 비율 동일한 정사각형 유지 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 0.5rem;
+    cursor: pointer;
+    border-radius: 12px;
+    position: relative;
+    transition: background-color var(--transition-speed);
+}
+
+.calendar-day.empty {
+    visibility: hidden;
+    /* 비어있는 날짜 칸 */
+}
+
+.calendar-day:active {
+    background-color: var(--border-light);
+}
+
+/* 선택된 날짜 */
+.calendar-day.selected {
+    background-color: rgba(74, 144, 226, 0.1);
+    /* Primary 색상의 10% 투명도 */
+    font-weight: 700;
+}
+
+/* 날짜 숫자 */
+.day-number {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-main);
+    z-index: 2;
+}
+
+/* 토요일 일요일 색상 (현재 월 기준) */
+.calendar-day.sunday .day-number {
+    color: var(--color-wife);
+}
+
+.calendar-day.saturday .day-number {
+    color: var(--color-primary);
+}
+
+/* 오늘 날짜 표시 동그라미 */
+.calendar-day.today .day-number {
+    color: white;
+    /* 텍스트 흰색 */
+}
+
+.calendar-day.today::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    /* 글자와 겹치도록 */
+    width: 28px;
+    height: 28px;
+    background-color: var(--text-main);
+    /* 오늘의 배경색 (진한색) */
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* 일정이 있는 날짜 하단에 찍히는 Dot들 */
+.events-dots {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 4px;
+    height: 6px;
+    /* 고정 높이 */
+}
+
+.dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--text-muted);
+    /* 기본색 */
+}
+
+.dot.husband {
+    background-color: var(--color-husband);
+}
+
+.dot.wife {
+    background-color: var(--color-wife);
+}
+
+.dot.both {
+    background-color: var(--color-both);
+}
+
+/* ==================
+   하단 리스트 내 개별 아이템 디자인
+   ================== */
+.event-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    background-color: var(--color-bg);
+    /* 카드 배경과 대비되도록 */
+    border-radius: 16px;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 좌측 컬러표시 바 (Indicator) */
+.event-indicator {
+    width: 5px;
+    position: absolute;
+    left: 0;
+    top: 1rem;
+    bottom: 1rem;
+    border-radius: 0 4px 4px 0;
+}
+
+.event-item.husband .event-indicator {
+    background-color: var(--color-husband);
+}
+
+.event-item.wife .event-indicator {
+    background-color: var(--color-wife);
+}
+
+.event-item.both .event-indicator {
+    background-color: var(--color-both);
+}
+
+.event-time {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 45px;
+    /* 12:30 같은 시간 표현 시 정렬 유지 */
+}
+
+.event-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-main);
+}
+
+.event-memo {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: pre-line;
+}
+
+.event-badget {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: var(--border-light);
+    color: var(--text-muted);
+    margin-left: auto;
+    /* 우측 정렬 */
+}
