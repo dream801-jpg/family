@@ -219,3 +219,8 @@ textarea:focus {
     background-color: var(--border-light);
     color: var(--text-main);
 }
+
+.btn-danger {
+    background-color: #FF3B30;
+    color: white;
+}
