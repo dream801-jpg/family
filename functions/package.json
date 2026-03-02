@@ -4,7 +4,7 @@
   "description": "가족 캘린더 알림 Cloud Functions",
   "main": "index.js",
   "engines": {
-    "node": "22"
+    "node": ">=22"
   },
   "scripts": {
     "serve": "firebase emulators:start --only functions",

@@ -28,7 +28,7 @@ const messaging = getMessaging(app);
 export async function saveFcmToken() {
   try {
     const token = await getToken(messaging, {
-      vapidKey: '' // VAPID 키는 Firebase 콘솔에서 생성 후 입력 필요
+      vapidKey: 'BF1yq8t3I2FmshuErcLcahhZY-WVpAAOmCnpD9srjhFkoJ6od2kLxRXixrD6PH-MtMe-O8q-tKDyPPn5XSF4sl8'
     });
     if (token) {
       // 토큰을 DB에 저장 (기기별 고유 토큰)
