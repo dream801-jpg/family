@@ -1,5 +1,5 @@
 import { Calendar } from './components/calendar.js';
-import { subscribeEvents, addEvent, updateEvent, deleteEvent, saveFcmToken, onForegroundMessage } from './services/firebase-config.js';
+import { subscribeEvents, addEvent, updateEvent, deleteEvent, saveFcmToken, onForegroundMessage, db } from './services/firebase-config.js';
 import { requestNotificationPermission, scheduleNotifications, startDailyScheduler } from './services/notification-service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -105,15 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('filterFamily').checked = savedSettings.filterFamily !== false;
         document.getElementById('filterPartner').checked = savedSettings.filterPartner || false;
 
-        settingsModal.style.display = 'flex';
+        settingsModal.classList.add('show');
     });
 
     document.getElementById('btnCancelSettings').addEventListener('click', () => {
-        settingsModal.style.display = 'none';
+        settingsModal.classList.remove('show');
     });
 
     settingsModal.addEventListener('click', (e) => {
-        if (e.target === settingsModal) settingsModal.style.display = 'none';
+        if (e.target === settingsModal) settingsModal.classList.remove('show');
     });
 
     document.getElementById('btnSaveSettings').addEventListener('click', async () => {
@@ -129,10 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Firebase에도 설정 저장 (Cloud Functions가 참조)
         try {
-            const { set, ref } = await import('firebase/database');
+            const { set: dbSet, ref: dbRef } = await import('firebase/database');
             const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
             localStorage.setItem('deviceId', deviceId);
-            await set(ref(db, `deviceSettings/${deviceId}`), {
+            await dbSet(dbRef(db, `deviceSettings/${deviceId}`), {
                 ...settings,
                 updatedAt: new Date().toISOString()
             });
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('설정 저장 실패:', err);
         }
 
-        settingsModal.style.display = 'none';
+        settingsModal.classList.remove('show');
         alert('✅ 설정이 저장되었습니다!');
     });
 
