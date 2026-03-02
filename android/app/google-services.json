@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "915823424141",
+    "firebase_url": "https://yoonmood-ea878-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "yoonmood-ea878",
+    "storage_bucket": "yoonmood-ea878.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:915823424141:android:3d20e9970bbc313bf168c4",
+        "android_client_info": {
+          "package_name": "com.yoonmood.familycalendar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCA_FNe6hWxG_1bFm8zTzDsbHkWx8QRNi4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
