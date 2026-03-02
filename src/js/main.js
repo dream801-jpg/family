@@ -88,6 +88,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // === 알림 권한 요청 ===
     initNotifications();
 
+    // === 설정 모달 ===
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsBtn = document.getElementById('settingsBtn');
+
+    // 저장된 설정 불러오기
+    const savedSettings = JSON.parse(localStorage.getItem('calendarSettings') || '{}');
+
+    settingsBtn.addEventListener('click', () => {
+        // 현재 설정값 UI에 반영
+        const role = savedSettings.role || 'husband';
+        const mode = savedSettings.notifMode || 'sound';
+        document.querySelector(`input[name="userRole"][value="${role}"]`).checked = true;
+        document.querySelector(`input[name="notifMode"][value="${mode}"]`).checked = true;
+        document.getElementById('filterMine').checked = savedSettings.filterMine !== false;
+        document.getElementById('filterFamily').checked = savedSettings.filterFamily !== false;
+        document.getElementById('filterPartner').checked = savedSettings.filterPartner || false;
+
+        settingsModal.style.display = 'flex';
+    });
+
+    document.getElementById('btnCancelSettings').addEventListener('click', () => {
+        settingsModal.style.display = 'none';
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.style.display = 'none';
+    });
+
+    document.getElementById('btnSaveSettings').addEventListener('click', async () => {
+        const role = document.querySelector('input[name="userRole"]:checked')?.value || 'husband';
+        const notifMode = document.querySelector('input[name="notifMode"]:checked')?.value || 'sound';
+        const filterMine = document.getElementById('filterMine').checked;
+        const filterFamily = document.getElementById('filterFamily').checked;
+        const filterPartner = document.getElementById('filterPartner').checked;
+
+        const settings = { role, notifMode, filterMine, filterFamily, filterPartner };
+        localStorage.setItem('calendarSettings', JSON.stringify(settings));
+        Object.assign(savedSettings, settings);
+
+        // Firebase에도 설정 저장 (Cloud Functions가 참조)
+        try {
+            const { set, ref } = await import('firebase/database');
+            const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+            localStorage.setItem('deviceId', deviceId);
+            await set(ref(db, `deviceSettings/${deviceId}`), {
+                ...settings,
+                updatedAt: new Date().toISOString()
+            });
+        } catch (err) {
+            console.error('설정 저장 실패:', err);
+        }
+
+        settingsModal.style.display = 'none';
+        alert('✅ 설정이 저장되었습니다!');
+    });
+
     // === 모달 제어 ===
     const openModal = () => {
         editingEventId = null;
@@ -225,8 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('✅ FCM 네이티브 토큰:', token.value);
                     const { set, ref } = await import('firebase/database');
                     const { db } = await import('./services/firebase-config.js');
+                    const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+                    localStorage.setItem('deviceId', deviceId);
                     await set(ref(db, `fcmTokens/${token.value.substring(0, 20)}`), {
                         token: token.value,
+                        deviceId: deviceId,
                         updatedAt: new Date().toISOString(),
                         platform: 'android'
                     });

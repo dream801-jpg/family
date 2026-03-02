@@ -127,6 +127,67 @@
         </div>
       </div>
     </div>
+
+    <!-- 설정 모달 -->
+    <div id="settingsModal" class="modal-backdrop" style="display:none">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">⚙️ 설정</h2>
+
+        <div class="settings-section">
+          <label class="form-label">나는 누구?</label>
+          <div class="role-selector">
+            <label class="role-option">
+              <input type="radio" name="userRole" value="husband">
+              <span class="role-chip">🔵 남편</span>
+            </label>
+            <label class="role-option">
+              <input type="radio" name="userRole" value="wife">
+              <span class="role-chip">🔴 아내</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="form-label">알림 방식</label>
+          <div class="notif-mode-selector">
+            <label class="notif-mode-option">
+              <input type="radio" name="notifMode" value="sound">
+              <span class="notif-mode-chip">🔊 소리+진동</span>
+            </label>
+            <label class="notif-mode-option">
+              <input type="radio" name="notifMode" value="vibrate">
+              <span class="notif-mode-chip">📳 진동만</span>
+            </label>
+            <label class="notif-mode-option">
+              <input type="radio" name="notifMode" value="silent">
+              <span class="notif-mode-chip">🔇 화면만</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <label class="form-label">알림 받을 일정</label>
+          <div class="notif-filter">
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterMine" checked> 내 일정
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterFamily" checked> 가족 공통 일정
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterPartner"> 상대방 일정
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btnCancelSettings" class="btn btn-secondary">취소</button>
+          <button type="button" id="btnSaveSettings" class="btn btn-primary">저장</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/js/main.js"></script>
   </body>
 </html>

@@ -31,9 +31,11 @@ export async function saveFcmToken() {
       vapidKey: 'BF1yq8t3I2FmshuErcLcahhZY-WVpAAOmCnpD9srjhFkoJ6od2kLxRXixrD6PH-MtMe-O8q-tKDyPPn5XSF4sl8'
     });
     if (token) {
-      // 토큰을 DB에 저장 (기기별 고유 토큰)
+      const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
+      localStorage.setItem('deviceId', deviceId);
       await set(ref(db, `fcmTokens/${token.substring(0, 20)}`), {
         token,
+        deviceId,
         updatedAt: new Date().toISOString()
       });
       console.log('✅ FCM 토큰 저장 완료');
