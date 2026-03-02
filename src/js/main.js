@@ -1,5 +1,5 @@
 import { Calendar } from './components/calendar.js';
-import { subscribeEvents, addEvent, updateEvent, deleteEvent } from './services/firebase-config.js';
+import { subscribeEvents, addEvent, updateEvent, deleteEvent, saveFcmToken, onForegroundMessage } from './services/firebase-config.js';
 import { requestNotificationPermission, scheduleNotifications, startDailyScheduler } from './services/notification-service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -207,6 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 이미 권한이 있으면 바로 스케줄링 시작
         if (Notification.permission === 'granted') {
             startDailyScheduler(allEvents);
+            saveFcmToken(); // FCM 토큰 갱신
+            setupForegroundHandler();
             return;
         }
 
@@ -236,12 +238,26 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => banner.remove(), 300);
             if (granted) {
                 startDailyScheduler(allEvents);
+                saveFcmToken(); // FCM 토큰 등록
+                setupForegroundHandler();
             }
         });
 
         document.getElementById('btnDenyNotif').addEventListener('click', () => {
             banner.classList.remove('show');
             setTimeout(() => banner.remove(), 300);
+        });
+    }
+
+    // === 포그라운드 FCM 메시지 수신 ===
+    function setupForegroundHandler() {
+        onForegroundMessage((payload) => {
+            const title = payload.notification?.title || '우리가족 캘린더';
+            const body = payload.notification?.body || '';
+            new Notification(title, {
+                body,
+                icon: '/pwa-192x192.png'
+            });
         });
     }
 });

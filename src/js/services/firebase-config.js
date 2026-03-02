@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, push, set, remove, update } from 'firebase/database';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAJvshPxu92fKbasnz9nZ0vpJxUar3sxh0",
@@ -15,20 +16,53 @@ const firebaseConfig = {
 // Firebase 초기화
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const messaging = getMessaging(app);
+
+// === FCM 푸시 알림 ===
+
+/**
+ * FCM 토큰 저장 (디바이스 등록)
+ * - 알림 권한 허용 후 호출
+ * - 토큰을 DB에 저장하면 Cloud Functions가 이 토큰으로 푸시를 보냄
+ */
+export async function saveFcmToken() {
+  try {
+    const token = await getToken(messaging, {
+      vapidKey: '' // VAPID 키는 Firebase 콘솔에서 생성 후 입력 필요
+    });
+    if (token) {
+      // 토큰을 DB에 저장 (기기별 고유 토큰)
+      await set(ref(db, `fcmTokens/${token.substring(0, 20)}`), {
+        token,
+        updatedAt: new Date().toISOString()
+      });
+      console.log('✅ FCM 토큰 저장 완료');
+      return token;
+    }
+  } catch (err) {
+    console.error('FCM 토큰 등록 실패:', err);
+  }
+  return null;
+}
+
+/**
+ * 포그라운드 메시지 수신 핸들러
+ */
+export function onForegroundMessage(callback) {
+  onMessage(messaging, (payload) => {
+    callback(payload);
+  });
+}
 
 // === 일정 데이터 서비스 ===
 
 /**
  * 모든 일정 실시간 구독
- * @param {Function} callback - 데이터 변경 시 호출될 콜백 (eventsMap 전달)
- * @returns {Function} unsubscribe 함수
  */
 export function subscribeEvents(callback) {
   const eventsRef = ref(db, 'events');
   const unsubscribe = onValue(eventsRef, (snapshot) => {
     const data = snapshot.val();
-    // Firebase 데이터를 날짜별 Map으로 변환
-    // { '2026-02-25': [{ id, title, time, assignee, memo, alerts }, ...] }
     const eventsMap = {};
     if (data) {
       Object.entries(data).forEach(([id, evt]) => {
@@ -66,4 +100,5 @@ export function deleteEvent(eventId) {
   return remove(eventRef);
 }
 
-export { db };
+export { db, messaging };
+
