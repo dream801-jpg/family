@@ -99,8 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 현재 설정값 UI에 반영
         const role = savedSettings.role || 'husband';
         const mode = savedSettings.notifMode || 'sound';
+        const notifSound = savedSettings.notifSound || 'default';
         document.querySelector(`input[name="userRole"][value="${role}"]`).checked = true;
         document.querySelector(`input[name="notifMode"][value="${mode}"]`).checked = true;
+        document.getElementById('notifSound').value = notifSound;
+
+        const soundWrapper = document.getElementById('soundSelectWrapper');
+        if (soundWrapper) soundWrapper.style.display = mode === 'sound' ? 'block' : 'none';
+
         document.getElementById('filterMine').checked = savedSettings.filterMine !== false;
         document.getElementById('filterFamily').checked = savedSettings.filterFamily !== false;
         document.getElementById('filterPartner').checked = savedSettings.filterPartner || false;
@@ -116,14 +122,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === settingsModal) settingsModal.classList.remove('show');
     });
 
+    document.getElementsByName('notifMode').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const wrapper = document.getElementById('soundSelectWrapper');
+            if (wrapper) {
+                wrapper.style.display = e.target.value === 'sound' ? 'block' : 'none';
+            }
+        });
+    });
+
     document.getElementById('btnSaveSettings').addEventListener('click', async () => {
         const role = document.querySelector('input[name="userRole"]:checked')?.value || 'husband';
         const notifMode = document.querySelector('input[name="notifMode"]:checked')?.value || 'sound';
+        const notifSound = document.getElementById('notifSound')?.value || 'default';
         const filterMine = document.getElementById('filterMine').checked;
         const filterFamily = document.getElementById('filterFamily').checked;
         const filterPartner = document.getElementById('filterPartner').checked;
 
-        const settings = { role, notifMode, filterMine, filterFamily, filterPartner };
+        const settings = { role, notifMode, notifSound, filterMine, filterFamily, filterPartner };
         localStorage.setItem('calendarSettings', JSON.stringify(settings));
         Object.assign(savedSettings, settings);
 

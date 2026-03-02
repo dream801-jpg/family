@@ -108,28 +108,38 @@ exports.sendScheduledNotifications = onSchedule(
                 if (shouldSend) {
                     targetTokens.push({
                         token: entry.token,
-                        notifMode: deviceSettings?.notifMode || 'sound'
+                        notifMode: deviceSettings?.notifMode || 'sound',
+                        notifSound: deviceSettings?.notifSound || 'default'
                     });
                 }
             }
 
             if (targetTokens.length === 0) continue;
 
-            // 알림 모드별로 그룹핑하여 전송
+            // 알림 모드 및 소리 설정별로 그룹핑하여 전송
             const modeGroups = {};
             targetTokens.forEach(t => {
-                if (!modeGroups[t.notifMode]) modeGroups[t.notifMode] = [];
-                modeGroups[t.notifMode].push(t.token);
+                const key = `${t.notifMode}_${t.notifSound}`;
+                if (!modeGroups[key]) {
+                    modeGroups[key] = {
+                        mode: t.notifMode,
+                        sound: t.notifSound,
+                        tokens: []
+                    };
+                }
+                modeGroups[key].tokens.push(t.token);
             });
 
-            for (const [mode, tokens] of Object.entries(modeGroups)) {
+            for (const group of Object.values(modeGroups)) {
+                const { mode, sound, tokens } = group;
+
                 // 알림 모드에 따른 Android 알림 설정
                 let androidConfig = {};
                 if (mode === 'sound') {
                     androidConfig = {
                         notification: {
-                            sound: 'default',
-                            channelId: 'calendar_sound',
+                            sound: sound === 'default' ? 'default' : `${sound}.wav`,
+                            channelId: `calendar_sound_${sound}`, // 각 소리마다 고유한 채널 ID 필요
                             priority: 'high'
                         }
                     };
