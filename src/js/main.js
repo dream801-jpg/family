@@ -99,10 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 현재 설정값 UI에 반영
         const role = savedSettings.role || 'husband';
         const mode = savedSettings.notifMode || 'sound';
-        const notifSound = savedSettings.notifSound || 'default';
+        let notifSoundUri = savedSettings.notifSoundUri || '';
+        let notifSoundName = savedSettings.notifSoundName || '기본 알림음';
+
         document.querySelector(`input[name="userRole"][value="${role}"]`).checked = true;
         document.querySelector(`input[name="notifMode"][value="${mode}"]`).checked = true;
-        document.getElementById('notifSound').value = notifSound;
+
+        const nameDisplay = document.getElementById('selectedRingtoneName');
+        if (nameDisplay) nameDisplay.textContent = notifSoundName;
 
         const soundWrapper = document.getElementById('soundSelectWrapper');
         if (soundWrapper) soundWrapper.style.display = mode === 'sound' ? 'block' : 'none';
@@ -131,15 +135,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const btnPickRingtone = document.getElementById('btnPickRingtone');
+    if (btnPickRingtone) {
+        btnPickRingtone.addEventListener('click', async () => {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                try {
+                    const result = await window.Capacitor.Plugins.Ringtone.pickRingtone({
+                        currentUri: notifSoundUri // 패스해도 동작 안할수 있지만 시도
+                    });
+                    if (result && result.uri !== undefined) {
+                        notifSoundUri = result.uri;
+                        notifSoundName = result.title;
+                        document.getElementById('selectedRingtoneName').textContent = notifSoundName;
+                    }
+                } catch (e) {
+                    console.error('소리 선택 취소 또는 오류', e);
+                }
+            } else {
+                alert('이 기능은 스마트폰 앱에서만 동작합니다.');
+            }
+        });
+    }
+
     document.getElementById('btnSaveSettings').addEventListener('click', async () => {
         const role = document.querySelector('input[name="userRole"]:checked')?.value || 'husband';
         const notifMode = document.querySelector('input[name="notifMode"]:checked')?.value || 'sound';
-        const notifSound = document.getElementById('notifSound')?.value || 'default';
         const filterMine = document.getElementById('filterMine').checked;
         const filterFamily = document.getElementById('filterFamily').checked;
         const filterPartner = document.getElementById('filterPartner').checked;
 
-        const settings = { role, notifMode, notifSound, filterMine, filterFamily, filterPartner };
+        const settings = { role, notifMode, notifSoundUri, notifSoundName, filterMine, filterFamily, filterPartner };
         localStorage.setItem('calendarSettings', JSON.stringify(settings));
         Object.assign(savedSettings, settings);
 

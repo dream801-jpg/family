@@ -136,10 +136,12 @@ exports.sendScheduledNotifications = onSchedule(
                 // 알림 모드에 따른 Android 알림 설정
                 let androidConfig = {};
                 if (mode === 'sound') {
+                    // 참고: Capacitor PushNotifications 플러그인에서 시스템 알림음을 배경에서 재생하려면
+                    // 앱 실행 시 클라이언트에서 해당 URI를 가진 NotificationChannel을 생성해두어야 합니다.
                     androidConfig = {
                         notification: {
-                            sound: sound === 'default' ? 'default' : `${sound}.wav`,
-                            channelId: `calendar_sound_${sound}`, // 각 소리마다 고유한 채널 ID 필요
+                            sound: 'default', // 기본적으로 default 지정, 실제 소리는 Channel에서 설정됨
+                            channelId: sound === 'default' ? 'calendar_sound' : `custom_ringtone_channel`, // 실제 운영시엔 URI 해시값 등을 사용해 채널 분리 필요
                             priority: 'high'
                         }
                     };
