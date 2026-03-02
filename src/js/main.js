@@ -202,54 +202,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 알림 초기화 ===
     async function initNotifications() {
-        if (!('Notification' in window)) return;
+        // Capacitor 네이티브 앱인지 확인
+        const isNative = window.Capacitor && window.Capacitor.isNativePlatform();
 
-        // 이미 권한이 있으면 바로 스케줄링 시작
-        if (Notification.permission === 'granted') {
-            startDailyScheduler(allEvents);
-            saveFcmToken(); // FCM 토큰 갱신
-            setupForegroundHandler();
-            return;
-        }
+        if (isNative) {
+            // 네이티브 앱: Capacitor Push Notifications 사용
+            try {
+                const { PushNotifications } = await import('@capacitor/push-notifications');
 
-        // 거부된 적이 있으면 배너 안 띄움
-        if (Notification.permission === 'denied') return;
+                // 권한 요청
+                const permResult = await PushNotifications.requestPermissions();
+                if (permResult.receive !== 'granted') {
+                    console.log('알림 권한 거부됨');
+                    return;
+                }
 
-        // 알림 권한 요청 배너 표시
-        const banner = document.createElement('div');
-        banner.className = 'notification-banner';
-        banner.innerHTML = `
-            <div class="notification-banner-content">
-                <span>🔔 일정 알림을 받으시겠습니까?</span>
-                <div class="notification-banner-actions">
-                    <button id="btnAllowNotif" class="btn btn-primary btn-sm">허용</button>
-                    <button id="btnDenyNotif" class="btn btn-secondary btn-sm">나중에</button>
-                </div>
-            </div>
-        `;
-        document.getElementById('app').appendChild(banner);
+                // FCM 토큰 등록
+                await PushNotifications.register();
 
-        // 약간의 딜레이 후 표시 (애니메이션)
-        setTimeout(() => banner.classList.add('show'), 500);
+                // 토큰 수신 → Firebase DB에 저장
+                PushNotifications.addListener('registration', async (token) => {
+                    console.log('✅ FCM 네이티브 토큰:', token.value);
+                    const { set, ref } = await import('firebase/database');
+                    const { db } = await import('./services/firebase-config.js');
+                    await set(ref(db, `fcmTokens/${token.value.substring(0, 20)}`), {
+                        token: token.value,
+                        updatedAt: new Date().toISOString(),
+                        platform: 'android'
+                    });
+                });
 
-        document.getElementById('btnAllowNotif').addEventListener('click', async () => {
-            const granted = await requestNotificationPermission();
-            banner.classList.remove('show');
-            setTimeout(() => banner.remove(), 300);
-            if (granted) {
+                PushNotifications.addListener('registrationError', (err) => {
+                    console.error('FCM 등록 실패:', err);
+                });
+
+                // 포그라운드에서 알림 수신
+                PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                    console.log('📩 포그라운드 알림:', notification);
+                    // 포그라운드에서도 알림 표시 (네이티브는 자동 표시 안함)
+                    alert(`🔔 ${notification.title}\n${notification.body || ''}`);
+                });
+
+                // 알림 클릭 시
+                PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+                    console.log('알림 클릭:', action);
+                });
+
+                // 포그라운드 일정 알림도 동작하도록 스케줄러 시작
                 startDailyScheduler(allEvents);
-                saveFcmToken(); // FCM 토큰 등록
-                setupForegroundHandler();
-            }
-        });
 
-        document.getElementById('btnDenyNotif').addEventListener('click', () => {
-            banner.classList.remove('show');
-            setTimeout(() => banner.remove(), 300);
-        });
+            } catch (err) {
+                console.error('Capacitor Push 초기화 실패:', err);
+            }
+        } else {
+            // 웹 브라우저: 기존 웹 알림 방식
+            if (!('Notification' in window)) return;
+
+            if (Notification.permission === 'granted') {
+                startDailyScheduler(allEvents);
+                saveFcmToken();
+                setupForegroundHandler();
+                return;
+            }
+
+            if (Notification.permission === 'denied') return;
+
+            const banner = document.createElement('div');
+            banner.className = 'notification-banner';
+            banner.innerHTML = `
+                <div class="notification-banner-content">
+                    <span>🔔 일정 알림을 받으시겠습니까?</span>
+                    <div class="notification-banner-actions">
+                        <button id="btnAllowNotif" class="btn btn-primary btn-sm">허용</button>
+                        <button id="btnDenyNotif" class="btn btn-secondary btn-sm">나중에</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('app').appendChild(banner);
+            setTimeout(() => banner.classList.add('show'), 500);
+
+            document.getElementById('btnAllowNotif').addEventListener('click', async () => {
+                const granted = await requestNotificationPermission();
+                banner.classList.remove('show');
+                setTimeout(() => banner.remove(), 300);
+                if (granted) {
+                    startDailyScheduler(allEvents);
+                    saveFcmToken();
+                    setupForegroundHandler();
+                }
+            });
+
+            document.getElementById('btnDenyNotif').addEventListener('click', () => {
+                banner.classList.remove('show');
+                setTimeout(() => banner.remove(), 300);
+            });
+        }
     }
 
-    // === 포그라운드 FCM 메시지 수신 ===
+    // === 포그라운드 FCM 메시지 수신 (웹 전용) ===
     function setupForegroundHandler() {
         onForegroundMessage((payload) => {
             const title = payload.notification?.title || '우리가족 캘린더';
